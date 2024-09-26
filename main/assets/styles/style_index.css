@@ -1,0 +1,30 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    display: block;
+    flex-direction: row;
+}
+
+table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+}
+
+tr:hover {
+    background-color: #f1f1f1; /* Change background color on hover */
+}

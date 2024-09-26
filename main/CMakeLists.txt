@@ -1,0 +1,18 @@
+idf_component_register(
+                    SRCS 
+                        "wifi.c" 
+                        "app_main.c"
+                        "web_server.c"
+                        "task_scheduler.c"
+                        "sd_init.c"
+                    INCLUDE_DIRS 
+                        "."
+                        "include"
+                    EMBED_FILES 
+                        "assets/plugins/bootstrap/bootstrap.min.css"
+                        "assets/plugins/bootstrap/bootstrap.bundle.min.js" 
+                        "assets/plugins/jszip/jszip.min.js"
+                        "assets/index.html"
+                        "assets/styles/style_index.css" 
+                        "assets/scripts/script_index.js"
+)
