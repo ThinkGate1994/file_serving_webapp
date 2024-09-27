@@ -7,6 +7,7 @@
 #include <esp_http_server.h>
 #include "esp_log.h"
 #include "cJSON.h"
+#include "zlib.h"
 
 #ifdef __cplusplus
 extern "C"

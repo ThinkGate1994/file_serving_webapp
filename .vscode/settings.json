@@ -24,7 +24,9 @@
     "sd_init.h": "c",
     "esp_system.h": "c",
     "sdmmc_host.h": "c",
-    "esp_event.h": "c"
+    "esp_event.h": "c",
+    "miniz.h": "c",
+    "zlib.h": "c"
   },
   "idf.flashType": "UART"
 }

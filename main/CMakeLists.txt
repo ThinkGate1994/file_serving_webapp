@@ -15,4 +15,5 @@ idf_component_register(
                         "assets/index.html"
                         "assets/styles/style_index.css" 
                         "assets/scripts/script_index.js"
+                        
 )

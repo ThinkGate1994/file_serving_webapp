@@ -332,17 +332,95 @@ function navigateBack() {
 function downloadFile(filePath) {
     console.log('download file path: ', filePath);
     const link = document.createElement('a');
-    link.href = `/download${filePath.replace('/dir/sdcard','')}`; // Build the download URL based on file path
+    link.href = `/download${filePath.replace('/dir/sdcard', '')}`; // Build the download URL based on file path
     link.download = filePath.split('/').pop(); // Extract the file name for download
     link.click();
 }
 
 // Function to download all files in the root directory
-function downloadAllFiles() {
-    const link = document.createElement('a');
-    link.href = '/download_all'; // This is the endpoint for downloading all files (needs implementation on ESP32 side)
-    link.download = 'all_files.zip'; // File name for the downloaded zip
-    link.click();
+// function downloadAllFiles() {
+//     const link = document.createElement('a');
+//     link.href = '/download_all'; // This is the endpoint for downloading all files (needs implementation on ESP32 side)
+//     link.download = 'all_files.zip'; // File name for the downloaded zip
+//     link.click();
+// }
+
+// async function downloadAllFiles() {
+//     const response = await fetch('/list-files');  // Endpoint to list files
+//     const fileList = await response.json();
+
+//     let zip = new JSZip();
+
+//     // Loop through each file
+//     for (let filePath of fileList) {
+//         let fileResponse = await fetch(filePath);
+//         let fileData = await fileResponse.blob();
+
+//         // Add file to the ZIP
+//         zip.file(filePath.substring(filePath.lastIndexOf('/') + 1), fileData);
+//     }
+
+//     // Generate ZIP file
+//     zip.generateAsync({ type: "blob" }).then(function(content) {
+//         // Download ZIP file
+//         let link = document.createElement("a");
+//         link.href = URL.createObjectURL(content);
+//         link.download = "all_files.zip";
+//         document.body.appendChild(link);
+//         link.click();
+//         document.body.removeChild(link);
+//     });
+// }
+
+
+async function downloadAllFiles() {
+    try {
+        const response = await fetch('/list-files');  // Fetch list of files recursively
+        const fileList = await response.json();
+
+        console.log("File list received: ", fileList);  // Debugging file list
+
+        let zip = new JSZip();
+
+        // Loop through all files (including files in subdirectories)
+        for (let filePath of fileList) {
+            try {
+                console.log("Fetching file: ", filePath);  // Debugging file fetch
+
+                let fileResponse = await fetch(filePath);
+                if (!fileResponse.ok) {
+                    console.error("Failed to fetch file: ", filePath);  // Error handling
+                    continue;
+                }
+
+                let fileData = await fileResponse.blob();
+                console.log("Adding file to ZIP: ", filePath);  // Debugging zip addition
+
+                // Preserve the directory structure when adding files to the ZIP
+                let relativePath = filePath.replace("/sdcard/", ""); // Remove base path
+                zip.file(relativePath, fileData);
+
+            } catch (fileError) {
+                console.error("Error fetching file: ", filePath, fileError);  // Error handling
+            }
+        }
+
+        // Generate ZIP and trigger download
+        zip.generateAsync({ type: "blob" }).then(function (content) {
+            console.log("ZIP generation complete.");  // Debugging zip completion
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(content);
+            link.download = "all_files.zip";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }).catch(function (zipError) {
+            console.error("Error generating ZIP: ", zipError);  // Error handling
+        });
+
+    } catch (error) {
+        console.error("Error fetching file list: ", error);  // Error handling
+    }
 }
 
 function clear_flash() {

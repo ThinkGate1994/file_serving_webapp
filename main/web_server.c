@@ -775,6 +775,60 @@ esp_err_t sdcard_file_download_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+esp_err_t sdcard_list_files_recursive(char *basePath, httpd_req_t *req, bool *isFirstFile) {
+    char path[600];
+    struct dirent *entry;
+    DIR *dir = opendir(basePath);
+
+    if (!dir) {
+        printf("Failed to open directory: %s\n", basePath);  // Debug print
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to open directory");
+        return ESP_FAIL;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_DIR) {
+            // Skip hidden directories like . and ..
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+
+            // Recursively enter subdirectories
+            snprintf(path, sizeof(path), "%s/%s", basePath, entry->d_name);
+            printf("Entering directory: %s\n", path);  // Debug print
+            sdcard_list_files_recursive(path, req, isFirstFile);
+        } else {
+            // This is a file, send it in the response
+            if (*isFirstFile) {
+                *isFirstFile = false; // Set the flag to false after the first file
+            } else {
+                httpd_resp_sendstr_chunk(req, ","); // Add comma separator for subsequent files
+            }
+
+            snprintf(path, sizeof(path), "\"%s/%s\"", basePath, entry->d_name);
+            printf("Adding file to JSON: %s\n", path);  // Debug print
+            httpd_resp_sendstr_chunk(req, path);
+        }
+    }
+
+    closedir(dir);
+    return ESP_OK;
+}
+
+esp_err_t sdcard_list_files_handler(httpd_req_t *req) {
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr_chunk(req, "{\"files\":["); // Start JSON response
+
+    bool isFirstFile = true; // Flag to track the first file
+    sdcard_list_files_recursive("/sdcard", req, &isFirstFile); // Pass the flag to recursive function
+
+    httpd_resp_sendstr_chunk(req, "]}"); // Close the JSON array and object
+    httpd_resp_sendstr_chunk(req, NULL);  // End the response
+
+    printf("Finished sending the file list.\n");  // Debug print
+
+    return ESP_OK;
+}
+
 esp_err_t static_file_handler(httpd_req_t *req)
 {
     // Extract the endpoint from the URI
@@ -820,6 +874,11 @@ esp_err_t static_file_handler(httpd_req_t *req)
     {
         // Return the index JS file
         return sdcard_file_download_handler(req);
+    }
+    else if (strstr(uri, "/list-files") != 0)
+    {
+        // Return the index JS file
+        return sdcard_list_files_handler(req);
     }
 
     ESP_LOGE(TAG, "URI not found : %s", uri);
