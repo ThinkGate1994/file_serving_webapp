@@ -227,7 +227,7 @@ function loadDirectory(path) {
             outputDiv.innerHTML = '';
 
             if (data.length === 0) {
-                outputDiv.innerHTML = 'SD card is empty.';
+                outputDiv.innerHTML = 'Flash is empty.';
             }
             else {
                 //Create a table to display the directory content
@@ -337,59 +337,27 @@ function downloadFile(filePath) {
     link.click();
 }
 
-// Function to download all files in the root directory
-// function downloadAllFiles() {
-//     const link = document.createElement('a');
-//     link.href = '/download_all'; // This is the endpoint for downloading all files (needs implementation on ESP32 side)
-//     link.download = 'all_files.zip'; // File name for the downloaded zip
-//     link.click();
-// }
-
-// async function downloadAllFiles() {
-//     const response = await fetch('/list-files');  // Endpoint to list files
-//     const fileList = await response.json();
-
-//     let zip = new JSZip();
-
-//     // Loop through each file
-//     for (let filePath of fileList) {
-//         let fileResponse = await fetch(filePath);
-//         let fileData = await fileResponse.blob();
-
-//         // Add file to the ZIP
-//         zip.file(filePath.substring(filePath.lastIndexOf('/') + 1), fileData);
-//     }
-
-//     // Generate ZIP file
-//     zip.generateAsync({ type: "blob" }).then(function(content) {
-//         // Download ZIP file
-//         let link = document.createElement("a");
-//         link.href = URL.createObjectURL(content);
-//         link.download = "all_files.zip";
-//         document.body.appendChild(link);
-//         link.click();
-//         document.body.removeChild(link);
-//     });
-// }
-
-
 async function downloadAllFiles() {
+    // Show the buffering spinner
+    document.getElementById('buffering').style.display = 'block';
     try {
         const response = await fetch('/list-files');  // Fetch list of files recursively
+        console.log("Raw response: ", response);
         const fileList = await response.json();
-
         console.log("File list received: ", fileList);  // Debugging file list
-
+        const files = fileList.files;
         let zip = new JSZip();
 
         // Loop through all files (including files in subdirectories)
-        for (let filePath of fileList) {
+        for (let filePath of files) {
             try {
                 console.log("Fetching file: ", filePath);  // Debugging file fetch
 
-                let fileResponse = await fetch(filePath);
+                let dirPath = `/download${filePath.replace("/sdcard", "")}`;  // Remove base path
+
+                let fileResponse = await fetch(dirPath);
                 if (!fileResponse.ok) {
-                    console.error("Failed to fetch file: ", filePath);  // Error handling
+                    console.error("Failed to fetch file: ", dirPath);  // Error handling
                     continue;
                 }
 
@@ -404,6 +372,9 @@ async function downloadAllFiles() {
                 console.error("Error fetching file: ", filePath, fileError);  // Error handling
             }
         }
+
+        // Hide the buffering spinner
+        document.getElementById('buffering').style.display = 'none';
 
         // Generate ZIP and trigger download
         zip.generateAsync({ type: "blob" }).then(function (content) {

@@ -1,16 +1,16 @@
 #include "sd_init.h"
 
 //sd card external
-#define SD_PIN_NUM_MISO  20
-#define SD_PIN_NUM_MOSI  14
-#define SD_PIN_NUM_CLK   19
-#define SD_PIN_NUM_CS    9
+// #define SD_PIN_NUM_MISO  20
+// #define SD_PIN_NUM_MOSI  14
+// #define SD_PIN_NUM_CLK   19
+// #define SD_PIN_NUM_CS    9
 
 //nand flash
-// #define SD_PIN_NUM_MISO  38
-// #define SD_PIN_NUM_MOSI  45
-// #define SD_PIN_NUM_CLK   21
-// #define SD_PIN_NUM_CS    42
+#define SD_PIN_NUM_MISO  38
+#define SD_PIN_NUM_MOSI  45
+#define SD_PIN_NUM_CLK   21
+#define SD_PIN_NUM_CS    42
 
 static const char* SDTAG = "SD_SETUP";   
 sdmmc_card_t *card;

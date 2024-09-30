@@ -26,7 +26,8 @@
     "sdmmc_host.h": "c",
     "esp_event.h": "c",
     "miniz.h": "c",
-    "zlib.h": "c"
+    "zlib.h": "c",
+    "task_scheduler.h": "c"
   },
   "idf.flashType": "UART"
 }
